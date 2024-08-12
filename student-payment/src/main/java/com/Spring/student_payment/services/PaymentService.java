@@ -1,5 +1,6 @@
 package com.Spring.student_payment.services;
 
+import com.Spring.student_payment.dtos.NewPaymentDTO;
 import com.Spring.student_payment.entities.Payment;
 import com.Spring.student_payment.entities.PaymentStatus;
 import com.Spring.student_payment.entities.PaymentType;
@@ -33,8 +34,7 @@ public class PaymentService {
         this.paymentRepository = paymentRepository;
     }
 
-    public Payment savePayment( MultipartFile file, LocalDate date, double amount, PaymentType type,
-                               String studentCode) throws IOException {
+    public Payment savePayment(MultipartFile file, NewPaymentDTO newPaymentDTO) throws IOException {
         Path folderPath = Paths.get(System.getProperty("user.home"),"enset-data","payments");
         if(!Files.exists(folderPath)){
             Files.createDirectories(folderPath);
@@ -42,15 +42,17 @@ public class PaymentService {
         String fileName = UUID.randomUUID().toString();
         Path filePath = Paths.get(System.getProperty("user.home"),"enset-data","payments",fileName+".pdf");
         Files.copy(file.getInputStream(),filePath);
-        Student student = studentRepository.findByCode(studentCode);
+        Student student = studentRepository.findByCode(newPaymentDTO.getStudentCode());
         if (student == null) {
-            throw new EntityNotFoundException("Student not found with code: " + studentCode);
+            throw new EntityNotFoundException("Student not found with code: " + newPaymentDTO.getStudentCode());
         }
 
-        Payment payment = Payment.builder().date(date)
-                .type(type).student(student)
-                .amount(amount).file(filePath.toUri().toString()).
+        Payment payment = Payment.builder()
+                .type(newPaymentDTO.getType()).
                 status(PaymentStatus.CREATED)
+                .date(newPaymentDTO.getDate()).
+                student(student)
+                .amount(newPaymentDTO.getAmount()).file(filePath.toUri().toString())
                 .build();
 
         return  paymentRepository.save(payment);

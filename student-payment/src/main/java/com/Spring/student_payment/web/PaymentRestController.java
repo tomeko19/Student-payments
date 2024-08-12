@@ -1,5 +1,6 @@
 package com.Spring.student_payment.web;
 
+import com.Spring.student_payment.dtos.NewPaymentDTO;
 import com.Spring.student_payment.entities.Payment;
 import com.Spring.student_payment.entities.PaymentStatus;
 import com.Spring.student_payment.entities.PaymentType;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin("*")
 public class PaymentRestController {
 
     private StudentRepository studentRepository;
@@ -72,10 +74,9 @@ public class PaymentRestController {
         return  paymentService.updatePaymentStatus(status, id);
     }
     @PostMapping(path = "/payments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Payment savePayment(@RequestParam  MultipartFile file, LocalDate date, double amount, PaymentType type,
-                               String studentCode) throws IOException {
+    public Payment savePayment(@RequestParam("file")  MultipartFile file, NewPaymentDTO newPaymentDTO) throws IOException {
 
-        return this.paymentService.savePayment(file, date, amount, type, studentCode);
+        return this.paymentService.savePayment(file, newPaymentDTO);
     }
     @GetMapping(path = "/paymentFile/{paymentId}", produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] getPaymentFile(@PathVariable  Long paymentId) throws IOException {
